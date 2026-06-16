@@ -9,10 +9,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tasks")
+@Transactional
 public class TaskController {
 
     private final MaintenanceQueueRepository queueRepository;
@@ -37,8 +40,21 @@ public class TaskController {
 
     @PostMapping("/add")
     @PreAuthorize("hasAnyRole('DRIVER', 'MANAGER', 'ADMIN')")
-    public ResponseEntity<MaintenanceQueue> addTask(Authentication authentication, @RequestBody TaskRequest request) {
-        MaintenanceQueue queue = getOrCreateQueue(authentication.getName());
+    public ResponseEntity<MaintenanceQueue> addTask(
+            Authentication authentication, 
+            @RequestBody TaskRequest request,
+            @RequestParam(required = false) String username) {
+        
+        String targetUser = authentication.getName();
+        if (username != null && !username.isEmpty()) {
+            boolean isPrivileged = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER") || a.getAuthority().equals("ROLE_ADMIN"));
+            if (isPrivileged) {
+                targetUser = username;
+            }
+        }
+
+        MaintenanceQueue queue = getOrCreateQueue(targetUser);
 
         // Check if identical task already exists in queue to avoid duplicates
         boolean exists = queue.getTasks().stream()
