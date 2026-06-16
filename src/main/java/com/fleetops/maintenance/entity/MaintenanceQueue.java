@@ -15,7 +15,7 @@ public class MaintenanceQueue {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @OneToMany(mappedBy = "queue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "queue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PendingTask> tasks = new ArrayList<>();
 
     public Long getId() { return id; }
