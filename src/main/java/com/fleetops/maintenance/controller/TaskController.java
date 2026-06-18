@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tasks")
