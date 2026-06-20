@@ -16,11 +16,26 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
 
 jwt:
   # JWT_SECRET MUST be injected via environment variable (Secrets Manager in AWS).
   # No fallback — service will refuse to start if the secret is missing.
   secret: ${JWT_SECRET}
+
+app:
+  efs:
+    mount-path: ${EFS_MOUNT_PATH:/var/www/fleetops/shared-media}
+  sns:
+    insurance-topic-arn: ${INSURANCE_SNS_TOPIC_ARN:}
+    service-topic-arn: ${SERVICE_SNS_TOPIC_ARN:}
+  vehicle-service:
+    url: ${VEHICLE_SERVICE_URL:http://fleetops-vehicle-service:8080}
+  aws:
+    region: ${AWS_REGION:us-east-1}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080}
@@ -28,6 +43,7 @@ cors:
 management:
   endpoints:
     web:
+      base-path: /
       exposure:
         include: health,info
   endpoint:
