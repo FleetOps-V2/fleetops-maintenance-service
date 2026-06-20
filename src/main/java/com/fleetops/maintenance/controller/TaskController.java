@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/tasks")
-@Transactional
 public class TaskController {
 
     private final MaintenanceQueueRepository queueRepository;
@@ -38,6 +37,7 @@ public class TaskController {
     }
 
     @PostMapping("/add")
+    @Transactional
     @PreAuthorize("hasAnyRole('DRIVER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<MaintenanceQueue> addTask(
             Authentication authentication, 
@@ -53,11 +53,16 @@ public class TaskController {
             }
         }
 
+        if (request.getVehicleId() == null || request.getTaskType() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         MaintenanceQueue queue = getOrCreateQueue(targetUser);
 
         // Check if identical task already exists in queue to avoid duplicates
         boolean exists = queue.getTasks().stream()
-                .anyMatch(t -> t.getVehicleId().equals(request.getVehicleId()) && t.getTaskType().equals(request.getTaskType()));
+                .anyMatch(t -> t.getVehicleId() != null && t.getVehicleId().equals(request.getVehicleId())
+                        && t.getTaskType() != null && t.getTaskType().equals(request.getTaskType()));
 
         if (!exists) {
             PendingTask newTask = new PendingTask();
@@ -73,6 +78,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/remove/{taskId}")
+    @Transactional
     @PreAuthorize("hasAnyRole('DRIVER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<MaintenanceQueue> removeTask(Authentication authentication, @PathVariable Long taskId) {
         MaintenanceQueue queue = getOrCreateQueue(authentication.getName());
@@ -81,6 +87,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/clear")
+    @Transactional
     @PreAuthorize("hasAnyRole('DRIVER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<MaintenanceQueue> clearQueue(Authentication authentication) {
         MaintenanceQueue queue = getOrCreateQueue(authentication.getName());
