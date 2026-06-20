@@ -43,7 +43,6 @@ cors:
 management:
   endpoints:
     web:
-      base-path: /
       exposure:
         include: health,info
   endpoint:
