@@ -96,6 +96,9 @@ public class AlarmBroadcastService {
                 return objectMapper.readValue(resp.body(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
             }
             log.warn("Vehicle service returned {} for {}", resp.statusCode(), path);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Interrupted while fetching alerts from {}: {}", path, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to fetch alerts from {}: {}", path, e.getMessage());
         }
